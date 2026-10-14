@@ -1,0 +1,8 @@
+{
+  "appId": "com.mysterycartridge.app",
+  "appName": "Mystery Cartridge",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#2a1c4c"
+  }
+}

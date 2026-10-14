@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mystery Cartridge</string>
+    <string name="title_activity_main">Mystery Cartridge</string>
+    <string name="package_name">com.mysterycartridge.app</string>
+    <string name="custom_url_scheme">com.mysterycartridge.app</string>
+</resources>
