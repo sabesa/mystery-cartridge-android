@@ -67,7 +67,7 @@ button:focus-visible{outline:3px solid var(--label);outline-offset:2px}
 
 .bezel-wrap{flex:1;min-height:0;padding:4px 14px 8px}
 .bezel{height:100%;display:flex;flex-direction:column;background:var(--bezel);border-radius:12px 12px 34px 12px;padding:14px 14px 8px;box-shadow:0 2px 0 rgba(255,255,255,.08) inset,0 -3px 0 rgba(0,0,0,.4) inset}
-#screen{position:relative;flex:1;min-height:0;background:#000;border-radius:4px;overflow:hidden;transform-origin:center}
+#screen{position:relative;flex:1;min-height:0;background:#000;border-radius:4px;overflow:hidden;transform-origin:center;touch-action:none}
 #screen.off{animation:crtOff .55s ease-in forwards}
 @keyframes crtOff{0%{transform:scale(1,1);filter:brightness(1)}55%{transform:scale(1,.006);filter:brightness(3)}100%{transform:scale(0,.006);filter:brightness(4)}}
 #game{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;touch-action:none}
@@ -212,6 +212,44 @@ button:focus-visible{outline:3px solid var(--label);outline-offset:2px}
   .dpad{grid-template:repeat(3,42px)/repeat(3,42px)}
   .round{width:80px;height:80px}
 }
+
+/* ---------- Landscape (phones turned sideways) ----------
+   The screen takes the full height in the middle; the pad and buttons float in the plastic on either side. */
+@media (orientation:landscape) and (max-height:600px){
+  :root{--sal:max(env(safe-area-inset-left,0px),var(--safe-area-inset-left,0px));--sar:max(env(safe-area-inset-right,0px),var(--safe-area-inset-right,0px))}
+  body{display:block;padding:0}
+  #app{max-width:none;width:100%;height:100%;border-radius:0;box-shadow:none}
+  .bar{position:absolute;z-index:5;top:0;left:0;right:0;padding:6px calc(12px + var(--sar)) 0 calc(12px + var(--sal));pointer-events:none;align-items:flex-start}
+  .bar .pause{pointer-events:auto;width:36px;height:36px}
+  .bar-left{max-width:150px;flex-wrap:wrap}
+  .bezel-wrap{padding:6px calc(168px + var(--sar)) 6px calc(168px + var(--sal))}
+  .bezel{padding:8px 8px 8px;border-radius:12px}
+  .bezel-foot{display:none}
+  #controls{position:absolute;z-index:4;left:0;right:0;top:0;bottom:0;height:auto;padding:0 calc(14px + var(--sar)) 16px calc(14px + var(--sal));align-items:flex-end;pointer-events:none}
+  #controls>*{pointer-events:auto}
+  #controls>.dpad{margin-right:auto}
+  #controls>.ab,#controls>.round{margin-left:auto}
+  .hint,.speaker{display:none}
+  .dpad{grid-template:repeat(3,46px)/repeat(3,46px)}
+  .round{width:78px;height:78px}
+  .ab .round{width:64px;height:64px}
+  .ab .round:first-child{margin-top:28px}
+  #titlecard{padding:8px 14px;gap:6px}
+  #titlecard .tc-name{font-size:24px}
+  .tc-tag{font-size:18px}.tc-how{font-size:16px}.tc-note{display:none}
+  .over{padding:8px}
+  .over-card{padding:10px 14px 10px}
+  .over-score{margin:8px 0 2px;font-size:22px}.over-best{margin-bottom:8px}.over-note{display:none}
+  .btn{margin-top:6px;padding:9px 12px 7px}
+  .sheet{justify-content:center}
+  .sheet-panel{max-width:520px;max-height:94%;padding:14px 18px 14px}
+  .sheet .btn{margin-top:6px}
+  #boot{display:grid;grid-template-columns:auto auto;grid-template-rows:1fr auto auto 1fr;column-gap:48px;row-gap:10px;justify-content:center;padding:8px}
+  .wordmark{grid-area:1/1;align-self:end}
+  .boot-status{grid-area:2/1}
+  .boot-meta{grid-area:3/1;align-self:start}
+  .dock{grid-area:1/2/5/3;align-self:center}
+}
 </style>
 </head>
 <body>
@@ -293,6 +331,32 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function rr(ctx,x,y,w,h,r){ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 const pad=n=>String(n).padStart(3,'0');
+// Shared swipe/tap recogniser. Fires the moment the finger has travelled `min` screen px (not on release),
+// so swipes feel instant. Thresholds are in screen px, so they feel the same in portrait and landscape.
+// once:true = one move per gesture (tile puzzles); otherwise a long drag re-anchors and can chain turns.
+// Carrying on in the direction that already fired just re-anchors, so sideways finger drift never turns.
+// aim:()=>[x,y] makes a plain tap steer: it moves toward the tapped spot, measured from that point
+// (usually the player). Taps within `dead` screen px of it are ignored.
+function swiper(api,onDir,o={}){
+  const min=o.min||12,tapMax=o.tapMax||min,dead=o.dead||16;let a=null;
+  const toDir=(dx,dy)=>Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)];
+  return(type,x,y)=>{
+    if(type==='down'){a={x,y,sx:x,sy:y,fired:null};return}
+    if(!a)return;
+    if(type==='up'){const t=a,d=Math.hypot(x-t.sx,y-t.sy);a=null;
+      if(t.fired||d>=api.px(tapMax))return;
+      if(o.onTap)o.onTap(t.sx,t.sy);
+      else if(o.aim){const[ax,ay]=o.aim(),dx=t.sx-ax,dy=t.sy-ay;if(Math.max(Math.abs(dx),Math.abs(dy))>=api.px(dead))onDir(...toDir(dx,dy))}
+      return}
+    if(o.once&&a.fired)return;
+    const dx=x-a.x,dy=y-a.y;
+    if(Math.max(Math.abs(dx),Math.abs(dy))>=api.px(min)){
+      const d=toDir(dx,dy);
+      if(!a.fired||d[0]!==a.fired[0]||d[1]!==a.fired[1]){onDir(...d);a.fired=d}
+      a.x=x;a.y=y;
+    }
+  };
+}
 
 /* =====================================================================
    GAME 1: NEON SERPENT  (arcade neon)
@@ -352,17 +416,8 @@ function NeonSerpent(api){
   };
   const KEYS={ArrowUp:[0,-1],KeyW:[0,-1],ArrowDown:[0,1],KeyS:[0,1],ArrowLeft:[-1,0],KeyA:[-1,0],ArrowRight:[1,0],KeyD:[1,0]};
   g.key=code=>{const k=KEYS[code];if(k)turn(k[0],k[1])};
-  g.pointer=(type,x,y)=>{
-    if(type==='down'){swipe={x,y};return}
-    if(!swipe)return;
-    if(type==='up'){swipe=null;return}
-    const dx=x-swipe.x,dy=y-swipe.y;
-    if(Math.max(Math.abs(dx),Math.abs(dy))>22){
-      if(Math.abs(dx)>Math.abs(dy))turn(Math.sign(dx),0);else turn(0,Math.sign(dy));
-      swipe={x,y};
-    }
-  };
-  g.controls=ui=>{ui.dpad((dx,dy)=>turn(dx,dy));ui.hint('Swipe on the screen, or use the pad.')};
+  g.pointer=swiper(api,turn,{min:10,aim:()=>[snake[0].x*C+C/2,snake[0].y*C+C/2]});
+  g.controls=ui=>{ui.dpad((dx,dy)=>turn(dx,dy));ui.hint('Tap beside the head to turn that way, swipe, or use the pad.')};
   return g;
 }
 
@@ -911,12 +966,8 @@ function DotDungeon(api){
   const KEYS={ArrowUp:[0,-1],KeyW:[0,-1],ArrowDown:[0,1],KeyS:[0,1],ArrowLeft:[-1,0],KeyA:[-1,0],ArrowRight:[1,0],KeyD:[1,0]};
   const dirIn=(dx,dy)=>{pl.next=[dx,dy]};
   g.key=code=>{const k=KEYS[code];if(k)dirIn(k[0],k[1])};
-  g.pointer=(type,x,y)=>{
-    if(type==='down'){swipe={x,y};return}if(!swipe)return;if(type==='up'){swipe=null;return}
-    const dx=x-swipe.x,dy=y-swipe.y;
-    if(Math.max(Math.abs(dx),Math.abs(dy))>18){Math.abs(dx)>Math.abs(dy)?dirIn(Math.sign(dx),0):dirIn(0,Math.sign(dy));swipe={x,y}}
-  };
-  g.controls=ui=>{ui.dpad((dx,dy)=>dirIn(dx,dy));ui.hint('Swipe or use the pad. Grab a gold star to freeze the monsters.')};
+  g.pointer=swiper(api,dirIn,{min:10,aim:()=>{const[px,py]=pos(pl);return[px*C+C/2,TOP+py*C+C/2]}});
+  g.controls=ui=>{ui.dpad((dx,dy)=>dirIn(dx,dy));ui.hint('Tap where you want to go, swipe, or use the pad. Grab a gold star to freeze the monsters.')};
   return g;
 }
 
@@ -997,12 +1048,7 @@ function RoadHopper(api){
   };
   const KEYS={ArrowUp:[0,1],KeyW:[0,1],ArrowDown:[0,-1],KeyS:[0,-1],ArrowLeft:[-1,0],KeyA:[-1,0],ArrowRight:[1,0],KeyD:[1,0]};
   g.key=code=>{const k=KEYS[code];if(k)tryMove(k[0],k[1]);else if(code==='Space')tryMove(0,1)};
-  g.pointer=(type,x,y)=>{
-    if(type==='down'){swipe={x,y};return}if(!swipe||type!=='up')return;
-    const dx=x-swipe.x,dy=y-swipe.y;swipe=null;
-    if(Math.max(Math.abs(dx),Math.abs(dy))<10){tryMove(0,1);return}
-    if(Math.abs(dx)>Math.abs(dy))tryMove(Math.sign(dx),0);else tryMove(0,dy<0?1:-1);
-  };
+  g.pointer=swiper(api,(dx,dy)=>tryMove(dx,-dy),{min:12,once:true,onTap:()=>tryMove(0,1)});
   g.controls=ui=>{ui.dpad((dx,dy)=>tryMove(dx,-dy));ui.hint('Tap to hop forward, swipe to dodge sideways. Don\'t dawdle!')};
   return g;
 }
@@ -1522,8 +1568,8 @@ function DoubleUp(api){
   };
   const KM={ArrowUp:[0,-1],KeyW:[0,-1],ArrowDown:[0,1],KeyS:[0,1],ArrowLeft:[-1,0],KeyA:[-1,0],ArrowRight:[1,0],KeyD:[1,0]};
   g.key=c=>{const k=KM[c];if(k)move(k[0],k[1])};
-  g.pointer=(type,x,y)=>{if(type==='down'){swipe={x,y};return}if(type==='up'&&swipe){const dx=x-swipe.x,dy=y-swipe.y;swipe=null;if(Math.max(Math.abs(dx),Math.abs(dy))<20)return;Math.abs(dx)>Math.abs(dy)?move(Math.sign(dx),0):move(0,Math.sign(dy))}};
-  g.controls=ui=>{ui.dpad((dx,dy)=>move(dx,dy));ui.hint('Swipe to slide every tile. Two equal numbers merge into their sum.')};
+  g.pointer=swiper(api,move,{min:14,once:true,dead:24,aim:()=>[OX+N*(CS+GAP)/2,OY+N*(CS+GAP)/2]});
+  g.controls=ui=>{ui.dpad((dx,dy)=>move(dx,dy));ui.hint('Swipe, or tap an edge of the board, to slide every tile. Two equal numbers merge into their sum.')};
   return g;
 }
 
@@ -1754,9 +1800,8 @@ function SlideFifteen(api){
     ctx.fillStyle='#120830';ctx.fillRect(BX,H-16,BS,6);ctx.fillStyle=timeLeft<15?'#ff5a7a':'#ffd23f';ctx.fillRect(BX,H-16,BS*timeLeft/limit,6);
     if(state==='solved')tx(ctx,'Solved!',W/2,BY+BS/2+10,{size:34,font:F,col:'#fff',align:'center',glow:'#ffd23f',blur:16});
   };
-  g.pointer=(type,x,y)=>{if(type==='down'){swipe={x,y};return}if(type!=='up'||!swipe)return;const dx=x-swipe.x,dy=y-swipe.y,sx=swipe.x,sy=swipe.y;swipe=null;
-    if(Math.max(Math.abs(dx),Math.abs(dy))>24){Math.abs(dx)>Math.abs(dy)?dir(Math.sign(dx),0):dir(0,Math.sign(dy));return}
-    const C=BS/N;if(sx>=BX&&sy>=BY&&sx<BX+BS&&sy<BY+BS)slideFrom(Math.floor((sy-BY)/C)*N+Math.floor((sx-BX)/C))};
+  g.pointer=swiper(api,dir,{min:14,once:true,tapMax:14,onTap:(sx,sy)=>{
+    const C=BS/N;if(sx>=BX&&sy>=BY&&sx<BX+BS&&sy<BY+BS)slideFrom(Math.floor((sy-BY)/C)*N+Math.floor((sx-BX)/C))}});
   const KM={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
   g.key=c=>{const k=KM[c];if(k)dir(k[0],k[1])};
   g.controls=ui=>{ui.dpad((dx,dy)=>dir(dx,dy));ui.hint('Tap a tile in line with the gap to slide it. Put the numbers back in order before time runs out.')};
@@ -1957,8 +2002,8 @@ function MazeDash(api){
     ctx.fillStyle='rgba(0,0,0,.3)';for(let y=1;y<H;y+=2)ctx.fillRect(0,y,W,1)};
   const KM={ArrowUp:[0,-1],KeyW:[0,-1],ArrowDown:[0,1],KeyS:[0,1],ArrowLeft:[-1,0],KeyA:[-1,0],ArrowRight:[1,0],KeyD:[1,0]};
   g.key=c=>{const k=KM[c];if(k)input(k[0],k[1])};
-  g.pointer=(type,x,y)=>{if(type==='down'){swipe={x,y};return}if(!swipe)return;if(type==='up'){swipe=null;return}const dx=x-swipe.x,dy=y-swipe.y;if(Math.max(Math.abs(dx),Math.abs(dy))>10){Math.abs(dx)>Math.abs(dy)?input(Math.sign(dx),0):input(0,Math.sign(dy));swipe={x,y}}};
-  g.controls=ui=>{ui.dpad((dx,dy)=>input(dx,dy));ui.hint('Swipe once and you run to the next fork. Reach the blinking exit before the bar empties.')};
+  g.pointer=swiper(api,input,{min:10,aim:()=>[ox+pl.x*cs+cs/2,oy+pl.y*cs+cs/2]});
+  g.controls=ui=>{ui.dpad((dx,dy)=>input(dx,dy));ui.hint('Tap or swipe a direction and you run to the next fork. Reach the blinking exit before the bar empties.')};
   return g;
 }
 
@@ -2334,10 +2379,10 @@ function PixelCircuit(api){
    ===================================================================== */
 const GAMES=[
   {id:'block-storm',num:1,name:'Block Storm',style:'8bit',tag:'Stack falling blocks and clear full rows before the storm buries you.',how:'Pad moves, Turn rotates, Drop slams. Every 12th piece is a lightning bolt that wipes its whole column.',make:BlockStorm},
-  {id:'neon-serpent',num:2,name:'Neon Serpent',style:'neon',tag:"Eat the glowing stars. Don't bite your own tail.",how:'Swipe on the screen or use the pad. Walls are deadly.',make:NeonSerpent},
+  {id:'neon-serpent',num:2,name:'Neon Serpent',style:'neon',tag:"Eat the glowing stars. Don't bite your own tail.",how:'Tap beside the head to turn, swipe, or use the pad. Walls are deadly.',make:NeonSerpent},
   {id:'wall-smasher',num:3,name:'Wall Smasher',style:'neon',tag:'Keep the ball alive and smash every brick.',how:'Drag on the screen to move the paddle. Tap to launch. Three balls per game.',make:WallSmasher},
   {id:'star-raider',num:4,name:'Star Raider',style:'8bit',tag:'Hold the line against endless alien waves.',how:'Drag to steer. Your ship fires automatically. Three ships per game.',make:StarRaider},
-  {id:'dot-dungeon',num:5,name:'Dot Dungeon',style:'neon',tag:'Collect every dot while the dungeon monsters hunt you. A new maze every level.',how:'Swipe or use the pad. Gold stars freeze the monsters for five seconds.',make:DotDungeon},
+  {id:'dot-dungeon',num:5,name:'Dot Dungeon',style:'neon',tag:'Collect every dot while the dungeon monsters hunt you. A new maze every level.',how:'Tap where you want to go, swipe, or use the pad. Gold stars freeze the monsters for five seconds.',make:DotDungeon},
   {id:'road-hopper',num:6,name:'Road Hopper',style:'8bit',tag:'Hop across endless roads and rivers. How far can you get?',how:'Tap to hop forward, swipe to move sideways or back. Logs carry you; water does not.',make:RoadHopper},
   {id:'pixel-pong',num:7,name:'Pixel Pong',style:'tv',tag:'The oldest sport on the screen. Beat the computer.',how:'Drag to move your paddle. Your score is every point you win before the computer reaches 5.',make:PixelPong},
   {id:'rock-blaster',num:8,name:'Rock Blaster',style:'vector',tag:'Drift through an asteroid field and blast every rock to dust.',how:'Pad rotates and thrusts. Hold Fire to shoot. Big rocks split into smaller, faster ones.',make:RockBlaster},
@@ -2349,7 +2394,7 @@ const GAMES=[
   {id:'mole-mayhem',num:14,name:'Mole Mayhem',style:'lcd',tag:'Bonk every critter before it hides. Never bonk a bomb.',how:'Tap the critters on the screen. Three misses ends it.',make:MoleMayhem},
   {id:'memory-lights',num:15,name:'Memory Lights',style:'neon',tag:'Watch the lights, then play them back. One more every round.',how:'Tap the pads in the same order. Your score is the number of rounds you survive.',make:MemoryLights},
   {id:'flipper-fever',num:16,name:'Flipper Fever',style:'16bit',tag:'A full pinball table in your pocket.',how:'Tap the left or right side of the screen for each flipper. Three balls.',make:FlipperFever},
-  {id:'double-up',num:17,name:'Double Up',style:'amber',tag:'Slide the tiles. Merge equal numbers. Aim for the biggest tile you can.',how:'Swipe in any direction. The game ends when no move is left.',make:DoubleUp},
+  {id:'double-up',num:17,name:'Double Up',style:'amber',tag:'Slide the tiles. Merge equal numbers. Aim for the biggest tile you can.',how:'Swipe, or tap an edge of the board. The game ends when no move is left.',make:DoubleUp},
   {id:'fit-the-grid',num:18,name:'Fit the Grid',style:'8bit',tag:'Drop pieces on the board and clear full lines.',how:'Drag pieces from the tray. Fill rows or columns to clear them. No room means game over.',make:FitTheGrid},
   {id:'nine-squares',num:19,name:'Nine Squares',style:'lcd',tag:'The classic nine-by-nine number puzzle on a pocket LCD.',how:'Pick a square, then a number. Three wrong numbers ends it.',make:NineSquares},
   {id:'cage-math',num:20,name:'Cage Math',style:'amber',tag:'Fill the grid so every cage adds, subtracts, multiplies or divides to its target.',how:'No repeats in any row or column. Beat the clock to get a bigger grid.',make:CageMath},
@@ -2358,7 +2403,7 @@ const GAMES=[
   {id:'crate-pusher',num:23,name:'Crate Pusher',style:'green',tag:'Push every crate onto a target in eight warehouse puzzles.',how:'You can push but never pull. Undo takes back one step.',make:CratePusher},
   {id:'twin-cards',num:24,name:'Twin Cards',style:'16bit',tag:'Find every matching pair before the clock runs out.',how:'Flip two cards at a time.',make:TwinCards},
   {id:'sky-stack',num:25,name:'Sky Stack',style:'neon',tag:'Stack the sliding blocks as high as the sky.',how:'Tap to drop. Whatever hangs over the edge is sliced off.',make:SkyStack},
-  {id:'maze-dash',num:26,name:'Maze Dash',style:'tv',tag:'Escape each maze before the clock runs out. They keep growing.',how:'Swipe once to run to the next fork.',make:MazeDash},
+  {id:'maze-dash',num:26,name:'Maze Dash',style:'tv',tag:'Escape each maze before the clock runs out. They keep growing.',how:'Tap or swipe a direction to run to the next fork.',make:MazeDash},
   {id:'powder-run',num:27,name:'Powder Run',style:'8bit',tag:'Carve down a snowy mountain through trees and flag gates.',how:'Steer with the pad or drag. Three crashes ends the run.',make:PowderRun},
   {id:'pocket-putt',num:28,name:'Pocket Putt',style:'16bit',tag:'Six holes of mini golf. Every stroke counts.',how:'Drag back from anywhere and let go to putt, like a slingshot.',make:PocketPutt},
   {id:'city-shield',num:29,name:'City Shield',style:'vector',tag:'Missiles rain from the sky. Protect the six cities below.',how:'Tap the sky to set off shield blasts in the missiles\u2019 path. Ammo is limited each wave.',make:CityShield},
@@ -2423,6 +2468,7 @@ function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
 document.addEventListener('pointerdown',()=>SFX.unlock(),{capture:true});
 const api={
   setScore(n){curScore=n;$('#hScore').textContent=n},
+  px(n){return inst&&canvas.clientWidth?n*inst.w/canvas.clientWidth:n}, // screen px -> game units
   sfx(n,a){SFX.play(n,a)},
   fx(kind){SFX.play(kind);if(BUZZ[kind])buzz(BUZZ[kind])},
   gameOver(score){if(phase!=='playing')return;phase='over';showOver(score)},
@@ -2487,7 +2533,7 @@ screenEl.addEventListener('pointerdown',e=>{
   inst.pointer&&inst.pointer('down',...toLogical(e));
 });
 screenEl.addEventListener('pointermove',e=>{if(phase==='playing'&&!halted()&&inst&&inst.pointer)inst.pointer('move',...toLogical(e))});
-screenEl.addEventListener('pointerup',e=>{if(inst&&inst.pointer)inst.pointer('up',...toLogical(e))});
+for(const ev of['pointerup','pointercancel'])screenEl.addEventListener(ev,e=>{if(inst&&inst.pointer)inst.pointer('up',...toLogical(e))});
 
 // ---- keyboard (for testing on a computer) ----
 document.addEventListener('keydown',e=>{
