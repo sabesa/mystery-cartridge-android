@@ -1,6 +1,6 @@
 # Mystery Cartridge
 
-A retro multi-game cartridge for Android. Every time you fully close and reopen
+A retro multi-game cartridge for Android. Every time you leave and come back to
 the app, it inserts a game you haven't seen yet. Once all 33 cartridges have
 been found, the collection reshuffles and a new cycle begins.
 
@@ -49,12 +49,12 @@ press the green Run button, or use *Build → Build APK(s)*.
 
 ## Testing tips
 
-- **Getting a new cartridge:** swipe the app away in the recent-apps screen, then
-  open it again. If you reopen it within 2 minutes, you continue the same cartridge
-  (this protects you when Android closes apps in the background).
-- **Pause menu → Power off** does the same thing as fully closing the app.
+- **Getting a new cartridge:** fully close the app and reopen it, or leave it (home
+  button, recent-apps, screen lock) for more than 15 seconds. Coming back sooner
+  continues the same cartridge.
+- **Last 3 games** with their high scores are listed in the pause menu.
+- **Pause menu → Next game** swaps in a new cartridge right away.
 - **Sound** can be turned off in the pause menu.
-- **Logbook** shows every cartridge you've found and your best scores.
 - Uninstalling the app erases all progress.
 
 ## Updating the game

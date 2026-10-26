@@ -142,21 +142,19 @@ button:focus-visible{outline:3px solid var(--label);outline-offset:2px}
 .btn.primary{background:var(--label);color:#3a2a00;box-shadow:0 4px 0 #a9831a}
 .btn.primary:active{box-shadow:0 1px 0 #a9831a}
 .btn.ghost{background:transparent;box-shadow:0 0 0 2px var(--plastic-hi) inset}
-.btn.danger{background:transparent;color:#ff9a8f;box-shadow:0 0 0 2px #a8433b inset;font-size:10px}
-.btn.danger.armed{background:var(--stripe);color:#fff}
 
 /* ---------- Controls deck ---------- */
 #controls{flex:none;height:190px;padding:6px 18px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.dpad{display:grid;grid-template:repeat(3,48px)/repeat(3,48px);flex:none}
-.dpad button{border:0;background:var(--rubber);color:#8e86a3;font-size:16px;touch-action:none;box-shadow:0 4px 0 #120e18}
-.dpad button.down-active,.dpad button:active{background:var(--rubber-hi);transform:translateY(2px);box-shadow:0 2px 0 #120e18}
+.dpad{display:grid;grid-template:repeat(3,52px)/repeat(3,52px);flex:none;touch-action:none}
+.dpad button{border:0;background:var(--rubber);color:#8e86a3;font-size:17px;touch-action:none;box-shadow:0 5px 0 #120e18;transition:transform 50ms,box-shadow 50ms,background 50ms,color 50ms}
+.dpad button.down-active{background:var(--rubber-hi);color:var(--label);transform:translateY(4px);box-shadow:0 1px 0 #120e18,inset 0 2px 6px rgba(0,0,0,.45)}
 .dpad .u{grid-area:1/2;border-radius:8px 8px 0 0}
 .dpad .l{grid-area:2/1;border-radius:8px 0 0 8px}
 .dpad .r{grid-area:2/3;border-radius:0 8px 8px 0}
 .dpad .d{grid-area:3/2;border-radius:0 0 8px 8px}
 .dpad .c{grid-area:2/2;background:var(--rubber);box-shadow:0 4px 0 #120e18}
-.round{width:92px;height:92px;border-radius:50%;border:0;background:var(--stripe);color:#fff;font-family:var(--pixel);font-size:11px;box-shadow:0 6px 0 #8f2620,0 0 0 6px rgba(0,0,0,.15);touch-action:none;flex:none}
-.round:active,.round.down-active{transform:translateY(4px);box-shadow:0 2px 0 #8f2620,0 0 0 6px rgba(0,0,0,.15)}
+.round{width:92px;height:92px;border-radius:50%;border:0;background:var(--stripe);color:#fff;font-family:var(--pixel);font-size:11px;box-shadow:0 6px 0 #8f2620,0 0 0 6px rgba(0,0,0,.15);touch-action:none;flex:none;transition:transform 50ms,box-shadow 50ms,filter 50ms}
+.round:active,.round.down-active{transform:translateY(5px);filter:brightness(.88);box-shadow:0 1px 0 #8f2620,0 0 0 6px rgba(0,0,0,.15),inset 0 3px 8px rgba(0,0,0,.35)}
 .ab{display:flex;gap:14px;align-items:flex-start;flex:none}
 .ab .round{width:70px;height:70px;font-size:9px}
 .ab .round:first-child{margin-top:36px}
@@ -186,17 +184,13 @@ button:focus-visible{outline:3px solid var(--label);outline-offset:2px}
 @keyframes up{from{transform:translateY(40px)}to{transform:none}}
 .sheet h2{margin:0 0 10px;font-family:var(--pixel);font-size:14px;font-weight:400;color:var(--label)}
 .sheet-note{font-size:17px;color:var(--on-plastic-dim);margin:12px 0 0;line-height:1.15}
-.log-head{display:flex;justify-content:space-between;align-items:center}
-.x{border:0;background:var(--rubber);width:36px;height:36px;border-radius:50%;font-size:16px}
-.log-summary{margin:0 0 12px;font-size:20px}
-.log-list{list-style:none;margin:0 0 6px;padding:0}
-.log-list li{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:8px;padding:10px 0;border-top:2px dashed rgba(255,255,255,.12)}
-.log-list .n{font-family:var(--pixel);font-size:9px;background:var(--label);color:#3a2a00;padding:5px 4px 4px;border-radius:3px;text-align:center}
-.log-list li.unknown .n{background:var(--rubber);color:#8e86a3}
-.log-list .nm{font-family:var(--pixel);font-size:10px;line-height:1.5}
-.log-list .st{display:block;font-family:var(--term);font-size:16px;color:var(--on-plastic-dim)}
-.log-list .bs{font-size:18px;text-align:right;color:var(--on-plastic-dim)}
-.log-list .now{color:#5dff8a}
+.recent{margin:14px 0 4px}
+.recent h3{margin:0 0 4px;font-family:var(--pixel);font-size:10px;font-weight:400;color:var(--on-plastic-dim)}
+.recent ul{list-style:none;margin:0;padding:0}
+.recent li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:2px dashed rgba(255,255,255,.12)}
+.recent .nm{font-family:var(--pixel);font-size:10px;line-height:1.5}
+.recent .now{font-family:var(--term);font-size:16px;color:#5dff8a;margin-left:6px}
+.recent .bs{font-size:18px;color:var(--on-plastic-dim);white-space:nowrap}
 
 @media (prefers-reduced-motion: reduce){
   .tc-start{animation:none}
@@ -278,8 +272,7 @@ button:focus-visible{outline:3px solid var(--label);outline-offset:2px}
             <p class="over-score" id="oScore">0</p>
             <p class="over-best" id="oBest"></p>
             <button class="btn primary" id="againBtn">Try again</button>
-            <button class="btn" id="oLogBtn">Logbook</button>
-            <p class="over-note">Retry as often as you like. Once you close the app, this cartridge is gone until you've found every other one.</p>
+            <p class="over-note">Retry as often as you like. Leave the app for more than 15 seconds and you'll get a new cartridge.</p>
           </div>
         </div>
       </div>
@@ -304,20 +297,10 @@ button:focus-visible{outline:3px solid var(--label);outline-offset:2px}
       <h2>Paused</h2>
       <button class="btn primary" data-act="resume">Resume</button>
       <button class="btn" data-act="restart">Restart this game</button>
-      <button class="btn" data-act="log">Logbook</button>
       <button class="btn" data-act="sound" id="soundBtn">Sound: on</button>
-      <button class="btn ghost" data-act="power">Power off</button>
-      <p class="sheet-note">Power off works like fully closing the app. When it starts again, you'll get a cartridge you haven't seen yet.</p>
-    </div>
-  </div>
-
-  <div class="sheet" id="log" hidden>
-    <div class="sheet-panel">
-      <div class="log-head"><h2>Logbook</h2><button class="x" id="logClose" aria-label="Close logbook">✕</button></div>
-      <p class="log-summary" id="logSummary"></p>
-      <ul class="log-list" id="logList"></ul>
-      <p class="sheet-note" id="logMore"></p>
-      <button class="btn danger" id="eraseBtn">Erase all progress</button>
+      <button class="btn ghost" data-act="next">Next game</button>
+      <div class="recent" id="recent"></div>
+      <p class="sheet-note">Next game swaps in a cartridge you haven't seen yet. Leaving the app for more than 15 seconds does the same.</p>
     </div>
   </div>
 </div>
@@ -2412,23 +2395,19 @@ const GAMES=[
   {id:'deep-dive',num:32,name:'Deep Dive',style:'ascii',tag:'Descend as deep as you can into a dungeon drawn in text.',how:'Each move is one turn. Walk into monsters to fight. Find the stairs (>) to go deeper.',make:DeepDive},
   {id:'pixel-circuit',num:33,name:'Pixel Circuit',style:'16bit',tag:'Three laps. Four cars. One trophy.',how:'Your car accelerates itself. Steer with the pad or by holding either side of the screen.',make:PixelCircuit},
 ];
-const PLANNED=33;
 const BY_ID=Object.fromEntries(GAMES.map(g=>[g.id,g]));
 
 /* =====================================================================
    SAVED PROGRESS (stays on this device)
    ===================================================================== */
 const KEY='mystery-cartridge-v1';
-const GRACE=2*60*1000; // restart within 2 min = same session (Android may kill apps in background)
-function fresh(){return{seen:[],found:[],cycle:1,current:null,lastId:null,lastActive:0,best:{}}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.seen))return Object.assign(fresh(),s)}catch(e){}return fresh()}
+const RECENT=3; // how many recent games keep their high score
+function fresh(){return{seen:[],cycle:1,lastId:null,recent:[]}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.seen)){const f=fresh();for(const k in f)if(k in s)f[k]=s[k];return f}}catch(e){}return fresh()}
 let S=load();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
-function touch(){S.lastActive=Date.now();save()}
 
-function pickCartridge(forceNew){
-  const now=Date.now();
-  if(!forceNew&&S.current&&BY_ID[S.current]&&now-S.lastActive<GRACE)return{game:BY_ID[S.current],resumed:true,reshuffled:false};
+function pickCartridge(){
   let reshuffled=false;
   let pool=GAMES.filter(g=>!S.seen.includes(g.id));
   if(!pool.length){
@@ -2436,16 +2415,17 @@ function pickCartridge(forceNew){
     pool=GAMES.filter(g=>g.id!==S.lastId);if(!pool.length)pool=GAMES.slice();
   }
   const g=pool[rand(pool.length)];
-  S.seen.push(g.id);if(!S.found.includes(g.id))S.found.push(g.id);
-  S.current=g.id;S.lastId=g.id;S.lastActive=now;save();
-  return{game:g,resumed:false,reshuffled};
+  const prev=S.recent.find(r=>r.id===g.id);
+  S.recent=[{id:g.id,best:prev?prev.best:null},...S.recent.filter(r=>r!==prev)].slice(0,RECENT);
+  S.seen.push(g.id);S.lastId=g.id;save();
+  return{game:g,reshuffled};
 }
 
 /* =====================================================================
    CONSOLE SHELL
    ===================================================================== */
 const canvas=$('#game'),ctx=canvas.getContext('2d'),screenEl=$('#screen'),controlsEl=$('#controls');
-const tc=$('#titlecard'),overEl=$('#over'),menuEl=$('#menu'),logEl=$('#log'),bootEl=$('#boot');
+const tc=$('#titlecard'),overEl=$('#over'),menuEl=$('#menu'),bootEl=$('#boot');
 let cart=null,inst=null,phase='boot',raf=0,lastT=0,scale=1,curScore=0;
 
 const SFX=(()=>{
@@ -2459,12 +2439,16 @@ const SFX=(()=>{
     power:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.09,'square',.06,0,i*.06)),crash:()=>{noise(.45,.16);tone(180,.4,'sawtooth',.06,45)},
     miss:()=>tone(330,.2,'square',.06,150),zap:()=>{noise(.25,.1);tone(1600,.25,'square',.05,90)},tone:f=>tone(f||440,.28,'triangle',.14),
     start:()=>[392,523,659,784].forEach((f,i)=>tone(f,.08,'square',.06,0,i*.07)),over:()=>[392,330,262,196].forEach((f,i)=>tone(f,.16,'square',.07,0,i*.15)),
-    insert:()=>{noise(.06,.12);tone(90,.14,'square',.1,60)}
+    insert:()=>{noise(.06,.12);tone(90,.14,'square',.1,60)},
+    press:()=>tone(170,.035,'triangle',.07,110)
   };
   return{play(n,a){try{lib[n]&&lib[n](a)}catch(e){}},get muted(){return muted},toggle(){muted=!muted;try{localStorage.setItem('mystery-cartridge-muted',muted?'1':'0')}catch(e){}return muted},unlock(){try{A()}catch(e){}}};
 })();
 const BUZZ={hit:20,score:12,power:40,crash:160,miss:70,zap:80};
-function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
+let buzzUntil=0;
+function buzz(ms){buzzUntil=Date.now()+ms;try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
+// physical "click" for controller buttons; never cuts short a longer game vibration
+function feel(){if(Date.now()>=buzzUntil)buzz(10);SFX.play('press')}
 document.addEventListener('pointerdown',()=>SFX.unlock(),{capture:true});
 const api={
   setScore(n){curScore=n;$('#hScore').textContent=n},
@@ -2487,7 +2471,7 @@ function fit(){
 }
 new ResizeObserver(fit).observe(screenEl);
 
-function halted(){return !menuEl.hidden||!logEl.hidden}
+function halted(){return !menuEl.hidden}
 function loop(t){
   raf=requestAnimationFrame(loop);
   const dt=Math.min(.05,lastT?(t-lastT)/1000:0);lastT=t;
@@ -2499,21 +2483,42 @@ function loop(t){
 // ---- controls deck builder ----
 function buildControls(g){
   controlsEl.innerHTML='';
+  // returns true when the press should act on the game (pressing on the title card starts it instead)
+  const engage=()=>{feel();if(phase==='title'){startGame();return false}return phase==='playing'&&!halted()};
   const hold=(el,down,up)=>{
     let active=false;
     el.addEventListener('pointerdown',e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(_){}
-      el.classList.add('down-active');if(phase==='playing'&&!halted()){active=true;down&&down()}});
+      el.classList.add('down-active');if(engage()){active=true;down&&down()}});
     const end=()=>{el.classList.remove('down-active');if(active){active=false;up&&up()}};
     for(const ev of['pointerup','pointercancel','lostpointercapture'])el.addEventListener(ev,end);
   };
   const ui={
+    // One touch surface, like a real rocker pad: slide your thumb to change direction without lifting.
     dpad(down,up){
       const d=document.createElement('div');d.className='dpad';
-      for(const[c,lab,dx,dy,aria]of[['u','▲',0,-1,'Up'],['l','◀',-1,0,'Left'],['r','▶',1,0,'Right'],['d','▼',0,1,'Down']]){
+      const dirs={u:[0,-1],l:[-1,0],r:[1,0],d:[0,1]},btn={};
+      for(const[c,lab,aria]of[['u','▲','Up'],['l','◀','Left'],['r','▶','Right'],['d','▼','Down']]){
         const b=document.createElement('button');b.className=c;b.textContent=lab;b.setAttribute('aria-label',aria);
-        hold(b,()=>down(dx,dy),up?()=>up(dx,dy):null);d.appendChild(b);
+        btn[c]=b;d.appendChild(b);
       }
       const c=document.createElement('span');c.className='c';d.appendChild(c);controlsEl.appendChild(d);
+      let cur=null,active=false,pid=null;
+      const dirAt=e=>{
+        const r=d.getBoundingClientRect(),x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2);
+        if(Math.hypot(x,y)<r.width*.12)return cur; // dead zone in the middle: keep what's held
+        const ax=Math.abs(x),ay=Math.abs(y),k=cur==='l'||cur==='r'?1.25:cur?0.8:1; // a little stickiness on the diagonals
+        return ax*k>ay?(x<0?'l':'r'):(y<0?'u':'d');
+      };
+      const set=k=>{
+        if(k===cur)return;
+        if(cur){btn[cur].classList.remove('down-active');if(active&&up)up(...dirs[cur])}
+        active=false;cur=k;
+        if(k){btn[k].classList.add('down-active');if(engage()){active=true;down(...dirs[k])}}
+      };
+      d.addEventListener('pointerdown',e=>{if(pid!==null)return;e.preventDefault();pid=e.pointerId;try{d.setPointerCapture(pid)}catch(_){}set(dirAt(e))});
+      d.addEventListener('pointermove',e=>{if(e.pointerId===pid)set(dirAt(e))});
+      const end=e=>{if(e.pointerId!==pid)return;pid=null;set(null)};
+      for(const ev of['pointerup','pointercancel','lostpointercapture'])d.addEventListener(ev,end);
     },
     button(label,down,up){const b=document.createElement('button');b.className='round';b.textContent=label;hold(b,down,up);controlsEl.appendChild(b)},
     ab(...defs){const w=document.createElement('div');w.className='ab';
@@ -2538,7 +2543,7 @@ for(const ev of['pointerup','pointercancel'])screenEl.addEventListener(ev,e=>{if
 // ---- keyboard (for testing on a computer) ----
 document.addEventListener('keydown',e=>{
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
-  if(e.code==='Escape'){if(!logEl.hidden)closeLog();else if(!menuEl.hidden)closeMenu();else if(phase==='playing')openMenu();return}
+  if(e.code==='Escape'){if(!menuEl.hidden)closeMenu();else if(phase==='playing')openMenu();return}
   if(halted())return;
   if(phase==='title'&&(e.code==='Enter'||e.code==='Space')){startGame();return}
   if(phase==='over'&&e.code==='Enter'){tryAgain();return}
@@ -2577,12 +2582,12 @@ function setHeader(){
   $('#hName').textContent=cart?cart.name:'Mystery Cartridge';
   $('#cycleFoot').textContent='Cycle '+S.cycle;
 }
-async function boot(forceNew){
+async function boot(){
   cancelAnimationFrame(raf);raf=0;inst=null;cart=null;phase='boot';
-  overEl.hidden=true;tc.hidden=true;menuEl.hidden=true;logEl.hidden=true;screenEl.classList.remove('off');
+  overEl.hidden=true;tc.hidden=true;menuEl.hidden=true;screenEl.classList.remove('off');
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
   $('#led').classList.remove('on');setHeader();api.setScore(0);controlsEl.innerHTML='';
-  const pick=pickCartridge(forceNew);
+  const pick=pickCartridge();
   const c=$('#cart');c.getAnimations().forEach(a=>a.cancel());c.style.transform='';
   bootEl.hidden=false;$('#dock').hidden=false;
   if(pick.reshuffled){
@@ -2591,32 +2596,27 @@ async function boot(forceNew){
     $('#bootStatus').innerHTML=`<span class="shuffle">You found all ${GAMES.length} cartridges!<br>Shuffling them for cycle ${S.cycle}</span>`;
     await sleep(2600);$('#dock').hidden=false;
   }
-  if(pick.resumed){
-    $('#bootStatus').textContent='Picking up where you left off';$('#bootMeta').textContent='';
-    c.style.transform='translateY(50px)';await sleep(900);
-  }else{
-    $('#bootStatus').textContent='Pulling a random cartridge';
-    $('#bootMeta').textContent=`Found this cycle: ${S.seen.length-1} of ${GAMES.length}`;
-    await insertAnimation();
-    $('#bootStatus').textContent='Cartridge inserted';await sleep(450);
-  }
+  $('#bootStatus').textContent='Pulling a random cartridge';
+  $('#bootMeta').textContent=`Found this cycle: ${S.seen.length-1} of ${GAMES.length}`;
+  await insertAnimation();
+  $('#bootStatus').textContent='Cartridge inserted';await sleep(450);
   bootEl.hidden=true;
   cart=pick.game;inst=cart.make(api);inst.reset();
   screenEl.style.background=inst.bg;setHeader();buildControls(inst);fit();
   $('#led').classList.add('on');
   lastT=0;raf=requestAnimationFrame(loop);
   await staticBurst(700);
-  showTitle(pick.resumed);
+  showTitle();
 }
-function showTitle(resumed){
+function showTitle(){
   phase='title';
   tc.className='tc-'+cart.style;
-  tc.innerHTML=`<div class="tc-num">${resumed?'Resumed: cartridge':'Cartridge'} #${pad(cart.num)}</div>
+  tc.innerHTML=`<div class="tc-num">Cartridge #${pad(cart.num)}</div>
     <div class="tc-name">${cart.name}</div>
     <div class="tc-tag">${cart.tag}</div>
     <div class="tc-how">${cart.how}</div>
     <div class="tc-start">Tap to start</div>
-    <div class="tc-note">Play as many rounds as you like. Close the app and this cartridge is gone.</div>`;
+    <div class="tc-note">Play as many rounds as you like. Leave the app and this cartridge is gone.</div>`;
   tc.hidden=false;
 }
 function startGame(){if(phase!=='title')return;SFX.unlock();SFX.play('start');tc.hidden=true;inst.reset();phase='playing'}
@@ -2625,20 +2625,26 @@ tc.addEventListener('click',startGame);
 // ---- game over ----
 function showOver(score){
   inst.release&&inst.release();SFX.play('over');
-  const prev=S.best[cart.id];const isNew=prev===undefined||score>prev;
-  if(isNew){S.best[cart.id]=score;save()}
+  const r=S.recent.find(r=>r.id===cart.id);const isNew=!r||r.best===null||score>r.best;
+  if(isNew&&r){r.best=score;save()}
   $('#oScore').textContent=score;
   const b=$('#oBest');b.classList.toggle('new',isNew&&score>0);
-  b.textContent=isNew&&score>0?'New best score!':`Best: ${S.best[cart.id]}`;
+  b.textContent=isNew&&score>0?'New best score!':`Best: ${r?r.best:score}`;
   overEl.hidden=false;
   setTimeout(()=>$('#againBtn').focus({preventScroll:true}),50);
 }
 function tryAgain(){overEl.hidden=true;inst.reset();phase='playing'}
 $('#againBtn').addEventListener('click',tryAgain);
-$('#oLogBtn').addEventListener('click',openLog);
 
 // ---- pause menu ----
-function openMenu(){if(phase==='boot')return;$('#soundBtn').textContent='Sound: '+(SFX.muted?'off':'on');inst&&inst.release&&inst.release();menuEl.hidden=false}
+function renderRecent(){
+  const rows=S.recent.filter(r=>BY_ID[r.id]).map(r=>{
+    const g=BY_ID[r.id],now=cart&&cart.id===g.id;
+    return `<li><span class="nm">${g.name}${now?'<span class="now">playing</span>':''}</span><span class="bs">${r.best===null?'No score yet':'High score '+r.best}</span></li>`;
+  });
+  $('#recent').innerHTML=rows.length?`<h3>Last ${RECENT} games</h3><ul>${rows.join('')}</ul>`:'';
+}
+function openMenu(){if(phase==='boot')return;$('#soundBtn').textContent='Sound: '+(SFX.muted?'off':'on');renderRecent();inst&&inst.release&&inst.release();menuEl.hidden=false}
 function closeMenu(){menuEl.hidden=true}
 $('#pauseBtn').addEventListener('click',()=>{if(menuEl.hidden)openMenu();else closeMenu()});
 menuEl.addEventListener('click',async e=>{
@@ -2646,52 +2652,26 @@ menuEl.addEventListener('click',async e=>{
   const act=e.target.closest('[data-act]')?.dataset.act;if(!act)return;
   if(act==='resume')closeMenu();
   if(act==='restart'){closeMenu();overEl.hidden=true;tc.hidden=true;inst.reset();phase='playing'}
-  if(act==='log')openLog();
   if(act==='sound'){SFX.toggle();$('#soundBtn').textContent='Sound: '+(SFX.muted?'off':'on');SFX.play('blip')}
-  if(act==='power'){
-    closeMenu();phase='boot';S.current=null;save();
+  if(act==='next'){
+    closeMenu();phase='boot';
     $('#led').classList.remove('on');screenEl.classList.add('off');
     await sleep(reduceMotion?100:900);
-    boot(true);
+    boot();
   }
-});
-
-// ---- logbook ----
-function openLog(){
-  const list=$('#logList');list.innerHTML='';
-  const sorted=GAMES.slice().sort((a,b)=>a.num-b.num);
-  for(const g of sorted){
-    const known=S.found.includes(g.id),thisCycle=S.seen.includes(g.id),now=cart&&cart.id===g.id;
-    const li=document.createElement('li');if(!known)li.className='unknown';
-    const best=S.best[g.id];
-    li.innerHTML=`<span class="n">#${pad(g.num)}</span>
-      <span class="nm">${known?g.name:'? ? ? ? ?'}<span class="st ${now?'now':''}">${now?'Playing now':known?(thisCycle?'Found this cycle':'Found in an earlier cycle'):'Not found yet'}</span></span>
-      <span class="bs">${known&&best!==undefined?'Best '+best:''}</span>`;
-    list.appendChild(li);
-  }
-  $('#logMore').textContent=GAMES.length>=PLANNED?`The full collection: ${GAMES.length} cartridges.`:`${PLANNED-GAMES.length} more cartridges are being built for this collection.`;
-  $('#logSummary').textContent=`Cycle ${S.cycle}: ${S.seen.length} of ${GAMES.length} cartridges found.`;
-  const er=$('#eraseBtn');er.classList.remove('armed');er.textContent='Erase all progress';
-  logEl.hidden=false;
-}
-function closeLog(){logEl.hidden=true}
-$('#logClose').addEventListener('click',closeLog);
-logEl.addEventListener('click',e=>{if(e.target===logEl)closeLog()});
-$('#eraseBtn').addEventListener('click',e=>{
-  const b=e.currentTarget;
-  if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Tap again to erase everything';return}
-  try{localStorage.removeItem(KEY)}catch(_){}
-  S=fresh();save();boot(true);
 });
 
 // ---- app lifecycle ----
-setInterval(()=>{if(phase!=='boot')touch()},5000);
+// Coming back within AWAY (screen lock, quick app switch) continues the same cartridge.
+// Staying away longer, or fully closing the app, inserts a new one.
+const AWAY=15*1000;
+let hiddenAt=0;
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden){touch();if(phase==='playing')openMenu()}
+  if(document.hidden){if(phase==='playing')openMenu();hiddenAt=phase!=='boot'?Date.now():0}
+  else{if(hiddenAt&&Date.now()-hiddenAt>=AWAY)boot();hiddenAt=0}
 });
-window.addEventListener('pagehide',touch);
 
-(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>boot(false));
+(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>boot());
 })();
 </script>
 </body>
