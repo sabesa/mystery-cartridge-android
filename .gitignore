@@ -1,2 +1,8 @@
 node_modules/
 .DS_Store
+
+# Signing keys must never be committed
+*.jks
+*.keystore
+*.p12
+keystore.properties
